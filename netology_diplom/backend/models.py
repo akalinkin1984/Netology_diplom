@@ -1,3 +1,4 @@
+from django.contrib.auth.base_user import BaseUserManager
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -17,9 +18,59 @@ USER_TYPE_CHOICES = (
 )
 
 
-class User(AbstractUser):
-    """Модель пользователя"""
+class UserManager(BaseUserManager):
+    """
+    Класс для управления пользователями
+    """
+    use_in_migrations = True
 
+    def _create_user(self, email, password, **extra_fields):
+        """
+        Создать и сохранить пользователя с заданным email и паролем.
+        """
+        if not email:
+            raise ValueError('Email должен быть указан')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_user(self, email, password=None, **extra_fields):
+        """
+        Создать пользователя с заданным email и паролем.
+        """
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
+        return self._create_user(email, password, **extra_fields)
+
+    def create_superuser(self, email, password, **extra_fields):
+        """
+        Создать суперпользователя с заданным email и паролем.
+        """
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        if not extra_fields.get('is_staff', True):
+            raise ValueError('Суперпользователь должен иметь is_staff=True.')
+        if not extra_fields.get('is_superuser', True):
+            raise ValueError('Суперпользователь должен иметь is_superuser=True.')
+
+        return self._create_user(email, password, **extra_fields)
+
+
+class User(AbstractUser):
+    """
+    Модель пользователя
+    """
+
+    objects = UserManager()
+
+    REQUIRED_FIELDS = []
+    USERNAME_FIELD = 'email'
+
+    email = models.EmailField(verbose_name='Email', unique=True)
     type = models.CharField(verbose_name='Тип пользователя', choices=USER_TYPE_CHOICES, max_length=5,
                             default='buyer')
     city = models.CharField(max_length=50, verbose_name='Город')
@@ -36,7 +87,9 @@ class User(AbstractUser):
 
 
 class Shop(models.Model):
-    """Модель магазина"""
+    """
+    Модель магазина
+    """
 
     name = models.CharField(max_length=50, verbose_name='Название магазина')
     url = models.URLField(verbose_name='Ссылка', null=True, blank=True)
@@ -53,7 +106,9 @@ class Shop(models.Model):
 
 
 class Category(models.Model):
-    """Модель категории"""
+    """
+    Модель категории
+    """
 
     name = models.CharField(max_length=50, verbose_name='Название категории')
     shops = models.ManyToManyField(Shop, verbose_name='Магазины', related_name='categories', blank=True)
@@ -68,7 +123,9 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    """Модель продукта"""
+    """
+    Модель продукта
+    """
 
     name = models.CharField(max_length=100, verbose_name='Название продукта')
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', on_delete=models.CASCADE)
@@ -83,10 +140,12 @@ class Product(models.Model):
 
 
 class ProductInfo(models.Model):
-    """Модель информации о продукте"""
+    """
+    Модель информации о продукте
+    """
 
     model = models.CharField(max_length=80, verbose_name='Модель', blank=True)
-    external_id = models.PositiveIntegerField(verbose_name='Внешний ИД', unique=True)
+    external_id = models.PositiveIntegerField(verbose_name='Внешний ИД')
     quantity = models.PositiveIntegerField(verbose_name='Количество')
     price = models.PositiveIntegerField(verbose_name='Цена')
     price_rrc = models.PositiveIntegerField(verbose_name='Рекомендуемая розничная цена')
@@ -102,7 +161,9 @@ class ProductInfo(models.Model):
 
 
 class Parameter(models.Model):
-    """Модель имени параметра"""
+    """
+    Модель имени параметра
+    """
 
     name = models.CharField(max_length=50, verbose_name='Название параметра')
 
@@ -116,7 +177,9 @@ class Parameter(models.Model):
 
 
 class ProductParameter(models.Model):
-    """Модель параметра продукта"""
+    """
+    Модель параметра продукта
+    """
 
     product_info = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте',
                                      related_name='product_parameters', on_delete=models.CASCADE)
@@ -136,7 +199,9 @@ class ProductParameter(models.Model):
 
 
 class Order(models.Model):
-    """Модель заказа"""
+    """
+    Модель заказа
+    """
 
     user = models.ForeignKey(User, verbose_name='Пользователь', related_name='orders', on_delete=models.CASCADE)
     dt = models.DateTimeField(auto_now_add=True)
@@ -152,7 +217,9 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    """Модель позиции заказа"""
+    """
+    Модель позиции заказа
+    """
 
     order = models.ForeignKey(Order, verbose_name='Заказ', related_name='order_items', on_delete=models.CASCADE)
     product = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте', related_name='order_items', on_delete=models.CASCADE)
