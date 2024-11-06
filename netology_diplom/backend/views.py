@@ -30,9 +30,17 @@ class PartnerUpdate(APIView):
                 data = load_yaml(file, Loader=Loader)
 
                 try:
-                    shop, _ = Shop.objects.get_or_create(name=data['shop'], user_id=request.user.id)
-                except IntegrityError:
-                    return JsonResponse({'status': False, 'error': 'У Вас нет доступа к этому магазину'}, status=403)
+                    shop = Shop.objects.get(name=data['shop'])
+                except Shop.DoesNotExist:
+                    try:
+                        shop = Shop.objects.create(name=data['shop'], user_id=request.user.id)
+                    except IntegrityError:
+                        return JsonResponse({'status': False, 'error': 'У Вас может быть только один магазин'},
+                                        status=403)
+                else:
+                    if shop.user.id != request.user.id:
+                        return JsonResponse({'status': False, 'error': 'У Вас нет доступа к этому магазину'},
+                                                 status=403)
 
                 for category in data['categories']:
                     category_object, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])

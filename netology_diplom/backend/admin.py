@@ -43,8 +43,8 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ProductInfo)
 class ProductInfoAdmin(admin.ModelAdmin):
-    list_display = ['id', 'model', 'external_id', 'quantity', 'price', 'price_rrc', 'product', 'shop', ]
-    list_filter = ['product__name', 'shop__name', ]
+    list_display = ['id', 'model', 'external_id', 'quantity', 'price', 'price_rrc', 'product', 'shop__name', ]
+    list_filter = ['shop__categories', 'shop__name', ]
 
 
 @admin.register(Parameter)
