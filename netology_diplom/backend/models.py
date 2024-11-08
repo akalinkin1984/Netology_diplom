@@ -260,7 +260,7 @@ class Contact(models.Model):
                              on_delete=models.CASCADE)
     city = models.CharField(max_length=50, verbose_name='Город')
     street = models.CharField(max_length=100, verbose_name='Улица')
-    house = models.CharField(max_length=15, verbose_name='Дом', blank=True)
+    house = models.CharField(max_length=15, verbose_name='Дом')
     structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
     building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
     apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
@@ -268,7 +268,7 @@ class Contact(models.Model):
 
     class Meta:
         verbose_name = 'Контакты пользователя'
-        verbose_name_plural = "Список контактов пользователя"
+        verbose_name_plural = "Контакты пользователей"
 
     def __str__(self):
         return f'{self.city} {self.street} {self.house}'
