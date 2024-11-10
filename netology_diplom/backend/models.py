@@ -147,8 +147,8 @@ class Product(models.Model):
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = 'Продукт'
-        verbose_name_plural = "Продукты"
+        verbose_name = 'Товар'
+        verbose_name_plural = "Товары"
         ordering = ('-name',)
 
     def __str__(self):
@@ -169,8 +169,8 @@ class ProductInfo(models.Model):
     shop = models.ForeignKey(Shop, verbose_name='Магазин', related_name='product_infos', on_delete=models.CASCADE)
 
     class Meta:
-        verbose_name = 'Информация о продукте'
-        verbose_name_plural = "Информация о продуктах"
+        verbose_name = 'Информация о товаре'
+        verbose_name_plural = "Информация о товарах"
 
     def __str__(self):
         return self.model
@@ -185,7 +185,7 @@ class Parameter(models.Model):
 
     class Meta:
         verbose_name = 'Имя параметра'
-        verbose_name_plural = "Параметры продуктов"
+        verbose_name_plural = "Параметры товаров"
         ordering = ('-name',)
 
     def __str__(self):
@@ -205,7 +205,7 @@ class ProductParameter(models.Model):
 
     class Meta:
         verbose_name = 'Параметр'
-        verbose_name_plural = "Список параметров продуктов"
+        verbose_name_plural = "Список параметров товаров"
         constraints = [
             models.UniqueConstraint(fields=['product_info', 'parameter'], name='unique_product_parameter'),
         ]

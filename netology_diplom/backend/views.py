@@ -6,11 +6,14 @@ from django.http import JsonResponse
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
 from yaml import load as load_yaml, Loader
+from django_filters.rest_framework import DjangoFilterBackend
 
-from backend.models import (User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
+from .models import (User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
                             Order, OrderItem, Contact)
-from backend.serializers import ContactSerializer
+from .serializers import ContactSerializer, ProductInfoSerializer
+from .filters import ProductInfoFilter
 
 
 class PartnerUpdate(APIView):
@@ -146,3 +149,14 @@ class ContactView(APIView):
                 return Response({'status': False, 'error': 'Неправильный формат идентификатора'}, status=400)
 
         return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'}, status=400)
+
+
+class ProductInfoView(ListAPIView):
+    """
+    Класс для поиска товаров
+    """
+    queryset = ProductInfo.objects.all()
+    serializer_class = ProductInfoSerializer
+    filterset_class = ProductInfoFilter
+    filterset_fields = ['model', 'external_id', 'product__category_id', 'shop_id']
+    http_method_names = ['get']
