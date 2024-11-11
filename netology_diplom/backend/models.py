@@ -6,6 +6,7 @@ from django.utils.translation import gettext_lazy as _
 
 
 STATUS_CHOICES = (
+    ('basket', 'В корзине'),
     ('new', 'Новый'),
     ('confirmed', 'Подтвержден'),
     ('assembled', 'Собран'),

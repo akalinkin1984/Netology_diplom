@@ -71,3 +71,13 @@ class ShopSerializer(serializers.ModelSerializer):
         model = Shop
         fields = ('id', 'name', 'status',)
         read_only_fields = ('id',)
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор заказа
+    """
+    class Meta:
+        model = Order
+        fields = ('id', 'user', 'status', 'dt', )
+        read_only_fields = ('id',)

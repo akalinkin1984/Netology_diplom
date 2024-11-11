@@ -1,7 +1,7 @@
 import os
 
 from django.db import IntegrityError
-from django.db.models import Q
+from django.db.models import Q, F, Sum
 from django.http import JsonResponse
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
@@ -13,8 +13,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
                             Order, OrderItem, Contact)
-from .serializers import ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer
+from .serializers import ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer, OrderSerializer
 from .filters import ProductInfoFilter
+from .signals import new_order
 
 
 class PartnerUpdate(APIView):
@@ -182,3 +183,34 @@ class ShopView(ListAPIView):
     serializer_class = ShopSerializer
     http_method_names = ['get']
 
+
+class OrderView(APIView):
+    """
+    Класс для получения и размешения заказов пользователями
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Получить мои заказы
+        """
+        orders = Order.objects.filter(user_id=request.user.id).exclude(status='basket').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price')))
+        serializer = OrderSerializer(orders, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Разместить заказ
+        """
+        if 'id' in request.data and 'contact' in request.data:
+            try:
+                Order.objects.filter(user_id=request.user.id, id=request.data['id']).update(
+                    contact_id=request.data['contact'],
+                    state='new')
+                new_order.send(sender=self.__class__, user_id=request.user.id)
+                return Response({'status': True})
+            except IntegrityError:
+                return Response({'status': False, 'error': 'Неправильно указаны аргументы'})
+
+        return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
