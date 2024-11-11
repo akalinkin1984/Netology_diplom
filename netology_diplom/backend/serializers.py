@@ -45,8 +45,29 @@ class ProductInfoSerializer(serializers.ModelSerializer):
     """
     product = ProductSerializer(read_only=True)
     product_parameters = ProductParameterSerializer(read_only=True, many=True)
+    shop = serializers.CharField(read_only=True, source="shop.name")
 
     class Meta:
         model = ProductInfo
         fields = ('id', 'external_id', 'product', 'model', 'quantity', 'price_rrc', 'shop', 'product_parameters')
+        read_only_fields = ('id',)
+
+
+class CategorySerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для просмотра категорий товаров
+    """
+    class Meta:
+        model = Category
+        fields = ('id', 'name',)
+        read_only_fields = ('id',)
+
+
+class ShopSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для просмотра магазинов
+    """
+    class Meta:
+        model = Shop
+        fields = ('id', 'name', 'status',)
         read_only_fields = ('id',)

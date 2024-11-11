@@ -3,6 +3,7 @@ import os
 from django.db import IntegrityError
 from django.db.models import Q
 from django.http import JsonResponse
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,7 +13,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
                             Order, OrderItem, Contact)
-from .serializers import ContactSerializer, ProductInfoSerializer
+from .serializers import ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer
 from .filters import ProductInfoFilter
 
 
@@ -158,5 +159,26 @@ class ProductInfoView(ListAPIView):
     queryset = ProductInfo.objects.all()
     serializer_class = ProductInfoSerializer
     filterset_class = ProductInfoFilter
+    filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['model', 'external_id', 'product__category_id', 'shop_id']
+    search_fields = ['model', 'product__name']
     http_method_names = ['get']
+
+
+class CategoryView(ListAPIView):
+    """
+    Класс для просмотра категорий товаров
+    """
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    http_method_names = ['get']
+
+
+class ShopView(ListAPIView):
+    """
+    Класс для просмотра магазинов
+    """
+    queryset = Shop.objects.filter(status=True)
+    serializer_class = ShopSerializer
+    http_method_names = ['get']
+

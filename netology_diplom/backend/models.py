@@ -143,7 +143,7 @@ class Product(models.Model):
     Модель продукта
     """
 
-    name = models.CharField(max_length=100, verbose_name='Название продукта')
+    name = models.CharField(max_length=100, verbose_name='Название товара')
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', on_delete=models.CASCADE)
 
     class Meta:
