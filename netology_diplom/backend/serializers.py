@@ -73,11 +73,26 @@ class ShopSerializer(serializers.ModelSerializer):
         read_only_fields = ('id',)
 
 
+class OrderItemSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор позиции заказа
+    """
+    product = serializers.CharField(read_only=True, source="product.product.name")
+    shop = serializers.CharField(read_only=True, source="shop.name")
+    price_rrc = serializers.IntegerField(read_only=True, source="product.price_rrc")
+
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'shop', 'quantity', 'price_rrc']
+
+
 class OrderSerializer(serializers.ModelSerializer):
     """
     Сериализатор заказа
     """
+    order_items = OrderItemSerializer(many=True, read_only=True)
+    total_sum = serializers.IntegerField()
+
     class Meta:
         model = Order
-        fields = ('id', 'user', 'status', 'dt', )
-        read_only_fields = ('id',)
+        fields = ['id', 'dt', 'status', 'order_items', 'total_sum']

@@ -163,7 +163,6 @@ class ProductInfoView(ListAPIView):
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_fields = ['model', 'external_id', 'product__category_id', 'shop_id']
     search_fields = ['model', 'product__name']
-    http_method_names = ['get']
 
 
 class CategoryView(ListAPIView):
@@ -172,7 +171,6 @@ class CategoryView(ListAPIView):
     """
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    http_method_names = ['get']
 
 
 class ShopView(ListAPIView):
@@ -181,12 +179,11 @@ class ShopView(ListAPIView):
     """
     queryset = Shop.objects.filter(status=True)
     serializer_class = ShopSerializer
-    http_method_names = ['get']
 
 
 class OrderView(APIView):
     """
-    Класс для получения и размешения заказов пользователями
+    Класс для получения и размещения заказов пользователями
     """
     permission_classes = [IsAuthenticated]
 
@@ -195,7 +192,7 @@ class OrderView(APIView):
         Получить мои заказы
         """
         orders = Order.objects.filter(user_id=request.user.id).exclude(status='basket').annotate(
-            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price')))
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price_rrc')))
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
@@ -207,7 +204,7 @@ class OrderView(APIView):
             try:
                 Order.objects.filter(user_id=request.user.id, id=request.data['id']).update(
                     contact_id=request.data['contact'],
-                    state='new')
+                    status='new')
                 new_order.send(sender=self.__class__, user_id=request.user.id)
                 return Response({'status': True})
             except IntegrityError:

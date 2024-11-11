@@ -103,6 +103,30 @@ class User(AbstractUser):
         ordering = ('email',)
 
 
+class Contact(models.Model):
+    """
+    Модель контактов пользователя
+    """
+
+    user = models.ForeignKey(User, verbose_name='Пользователь',
+                             related_name='contacts', blank=True,
+                             on_delete=models.CASCADE)
+    city = models.CharField(max_length=50, verbose_name='Город')
+    street = models.CharField(max_length=100, verbose_name='Улица')
+    house = models.CharField(max_length=15, verbose_name='Дом')
+    structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
+    building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
+    apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
+    phone = models.CharField(max_length=20, verbose_name='Телефон')
+
+    class Meta:
+        verbose_name = 'Контакты пользователя'
+        verbose_name_plural = "Контакты пользователей"
+
+    def __str__(self):
+        return f'{self.city} {self.street} {self.house}'
+
+
 class Shop(models.Model):
     """
     Модель магазина
@@ -223,6 +247,9 @@ class Order(models.Model):
     user = models.ForeignKey(User, verbose_name='Пользователь', related_name='orders', on_delete=models.CASCADE)
     dt = models.DateTimeField(auto_now_add=True)
     status = models.CharField(verbose_name='Статус', choices=STATUS_CHOICES, max_length=15)
+    contact = models.ForeignKey(Contact, verbose_name='Контакт пользователя',
+                                blank=True, null=True,
+                                on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'Заказ'
@@ -249,27 +276,3 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.order} - {self.product}'
-
-
-class Contact(models.Model):
-    """
-    Модель контактов пользователя
-    """
-
-    user = models.ForeignKey(User, verbose_name='Пользователь',
-                             related_name='contacts', blank=True,
-                             on_delete=models.CASCADE)
-    city = models.CharField(max_length=50, verbose_name='Город')
-    street = models.CharField(max_length=100, verbose_name='Улица')
-    house = models.CharField(max_length=15, verbose_name='Дом')
-    structure = models.CharField(max_length=15, verbose_name='Корпус', blank=True)
-    building = models.CharField(max_length=15, verbose_name='Строение', blank=True)
-    apartment = models.CharField(max_length=15, verbose_name='Квартира', blank=True)
-    phone = models.CharField(max_length=20, verbose_name='Телефон')
-
-    class Meta:
-        verbose_name = 'Контакты пользователя'
-        verbose_name_plural = "Контакты пользователей"
-
-    def __str__(self):
-        return f'{self.city} {self.street} {self.house}'
