@@ -3,7 +3,6 @@ import json
 
 from django.db import IntegrityError
 from django.db.models import Q, F, Sum
-from django.http import JsonResponse
 from rest_framework.filters import SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -234,29 +233,33 @@ class BasketView(APIView):
         """
         Добавить товары в корзину
         """
-        items = request.data.get('items')
-        if not items:
+        items_string = request.data.get('items')
+        if not items_string:
             return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
 
         try:
-            items_dict = json.loads(items)
+            items_dict = json.loads(items_string)
         except ValueError:
             return Response({'status': False, 'error': 'Неверный формат запроса'})
 
         basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
-        serializer = OrderItemSerializer(data=items_dict, many=True)
-        if serializer.is_valid():
-            try:
-                serializer.save()
-            except IntegrityError as error:
-                return Response({'status': False, 'error': str(error)})
-            return Response({'status': True, 'Создано объектов': len(items_dict)})
-        else:
-            return Response({'status': False, 'error': serializer.errors})
+
+        for order_item in items_dict:
+            order_item.update({'order': basket.id})
+            serializer = OrderItemSerializer(data=order_item)
+            if serializer.is_valid():
+                try:
+                    serializer.save()
+                except IntegrityError as error:
+                    return Response({'status': False, 'error': str(error)})
+            else:
+                return Response({'status': False, 'error': serializer.errors})
+
+        return Response({'status': True, 'Создано объектов': len(items_dict)})
 
     def put(self, request):
         """
-        Обновить товары в корзине
+        Обновить товары в корзине(количество)
         """
         items = request.data.get('items')
         if not items:
