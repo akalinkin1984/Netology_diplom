@@ -1,4 +1,5 @@
 import os
+import json
 
 from django.db import IntegrityError
 from django.db.models import Q, F, Sum
@@ -13,7 +14,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 from .models import (User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
                             Order, OrderItem, Contact)
-from .serializers import ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer, OrderSerializer
+from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer,
+                          OrderSerializer, OrderItemSerializer)
 from .filters import ProductInfoFilter
 from .signals import new_order
 
@@ -211,3 +213,77 @@ class OrderView(APIView):
                 return Response({'status': False, 'error': 'Неправильно указаны аргументы'})
 
         return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
+
+
+class BasketView(APIView):
+    """
+    Класс для управления корзиной
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Получить корзину
+        """
+        basket = Order.objects.filter(user_id=request.user.id, status='basket').annotate(
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price_rrc')))
+        serializer = OrderSerializer(basket, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        """
+        Добавить товары в корзину
+        """
+        items = request.data.get('items')
+        if not items:
+            return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
+
+        try:
+            items_dict = json.loads(items)
+        except ValueError:
+            return Response({'status': False, 'error': 'Неверный формат запроса'})
+
+        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
+        serializer = OrderItemSerializer(data=items_dict, many=True)
+        if serializer.is_valid():
+            try:
+                serializer.save()
+            except IntegrityError as error:
+                return Response({'status': False, 'error': str(error)})
+            return Response({'status': True, 'Создано объектов': len(items_dict)})
+        else:
+            return Response({'status': False, 'error': serializer.errors})
+
+    def put(self, request):
+        """
+        Обновить товары в корзине
+        """
+        items = request.data.get('items')
+        if not items:
+            return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
+
+        try:
+            items_dict = json.loads(items)
+        except ValueError:
+            return Response({'status': False, 'error': 'Неверный формат запроса'})
+
+        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
+        objects_updated = 0
+        for order_item in items_dict:
+            if type(order_item['id']) == int and type(order_item['quantity']) == int:
+                objects_updated += OrderItem.objects.filter(order_id=basket.id, id=order_item['id']).update(
+                    quantity=order_item['quantity'])
+        return Response({'status': True, 'Обновлено объектов': objects_updated})
+
+    def delete(self, request):
+        """
+        Удалить товары из корзины
+        """
+        items = request.data.get('items')
+        if not items:
+            return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
+
+        basket, _ = Order.objects.get_or_create(user_id=request.user.id, status='basket')
+        order_item_ids = [int(x) for x in items.split(',') if x.isdigit()]
+        deleted_count = OrderItem.objects.filter(order_id=basket.id, id__in=order_item_ids).delete()[0]
+        return Response({'status': True, 'Удалено объектов': deleted_count})
