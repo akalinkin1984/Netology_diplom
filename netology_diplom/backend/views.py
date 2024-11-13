@@ -290,3 +290,40 @@ class BasketView(APIView):
         order_item_ids = [int(x) for x in items.split(',') if x.isdigit()]
         deleted_count = OrderItem.objects.filter(order_id=basket.id, id__in=order_item_ids).delete()[0]
         return Response({'status': True, 'Удалено объектов': deleted_count})
+
+
+class PartnerState(APIView):
+    """
+    Класс для получения и смены статуса своего магазина
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Получить информацию о своем магазине
+        """
+        if request.user.type != 'shop':
+            return Response({'status': False, 'error': 'Только для магазинов'}, status=403)
+
+        shop = request.user.shop
+        if not shop:
+            return Response({'status': False, 'error': 'Магазин не найден'}, status=404)
+
+        serializer = ShopSerializer(shop)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        """
+        Изменить статус своего магазина
+        """
+        if request.user.type != 'shop':
+            return Response({'status': False, 'error': 'Только для магазинов'}, status=403)
+
+        shop = Shop.objects.filter(user_id=request.user.id).first()
+        if not shop:
+            return Response({'status': False, 'error': 'Магазин не найден'}, status=404)
+
+        shop.status = not shop.status
+        shop.save()
+        return Response({'status': True})
+
