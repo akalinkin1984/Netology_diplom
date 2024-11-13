@@ -21,15 +21,14 @@ from .signals import new_order
 
 class PartnerUpdate(APIView):
     """
-    Класс для обновления информации о партнере.
+    Класс для обновления прайса магазина
     """
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, *args, **kwargs):
         """
-        Обновить информацию о прайс-листе партнера.
+        Обновить прайс магазина.
         """
-        if not request.user.is_authenticated:
-            return Response({'status': False, 'error': 'Требуется войти в систему'}, status=403)
-
         if request.user.type != 'shop':
             return Response({'status': False, 'error': 'Только для магазинов'}, status=403)
 
@@ -327,3 +326,23 @@ class PartnerState(APIView):
         shop.save()
         return Response({'status': True})
 
+
+class PartnerOrders(APIView):
+    """
+    Класс для получения заказов магазином
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        """
+        Получить заказы
+        """
+        if request.user.type != 'shop':
+            return Response({'status': False, 'error': 'Только для магазинов'}, status=403)
+
+        order = (Order.objects.filter(order_items__product__shop=request.user.shop)
+                 .exclude(status='basket')
+                 .annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product__price_rrc'))))
+
+        serializer = OrderSerializer(order, many=True)
+        return Response(serializer.data)
