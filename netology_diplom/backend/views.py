@@ -1,6 +1,8 @@
 import os
 import json
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Q, F, Sum
 from rest_framework.filters import SearchFilter
@@ -205,7 +207,20 @@ class OrderView(APIView):
                 Order.objects.filter(user_id=request.user.id, id=request.data['id']).update(
                     contact_id=request.data['contact'],
                     status='new')
-                new_order.send(sender=self.__class__, user_id=request.user.id)
+                new_order.send(sender=self.__class__, user_id=request.user.id, order_id=request.data['id'])
+
+                order = Order.objects.get(id=request.data['id'])
+                shop_emails = order.order_items.values_list('shop__user__email', flat=True).distinct()
+
+                for email in shop_emails:
+                    send_mail(
+                        'Новый заказ',
+                        'У вас новый заказ. Пожалуйста, проверьте свой аккаунт.',
+                        settings.EMAIL_HOST_USER,
+                        [email],
+                        fail_silently=False,
+                    )
+
                 return Response({'status': True})
             except IntegrityError:
                 return Response({'status': False, 'error': 'Неправильно указаны аргументы'})

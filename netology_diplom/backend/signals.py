@@ -13,8 +13,9 @@ def send_new_order_email(sender, user_id, **kwargs):
     Отправить письмо при изменении статуса заказа
     """
     user = User.objects.get(id=user_id)
+
     subject = "Обновление статуса заказа"
-    message = 'Заказ сформирован'
+    message = f"Ваш заказ №{kwargs.get('order_id')} сформирован"
     from_email = settings.EMAIL_HOST_USER
     to_email = [user.email]
 
