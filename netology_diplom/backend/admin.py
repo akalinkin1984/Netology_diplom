@@ -5,7 +5,6 @@ from backend.models import (User, Shop, Category, Product, ProductInfo, Paramete
                             Order, OrderItem, Contact)
 
 
-# Register your models here.
 @admin.register(User)
 class UserAdmin(UserAdmin):
     """Настройка панели управления пользователями в административной части сайта"""

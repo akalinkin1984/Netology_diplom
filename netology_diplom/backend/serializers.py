@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import (User, Category, Shop, ProductInfo, Product, ProductParameter,
+from .models import (Category, Shop, ProductInfo, Product, ProductParameter,
                             OrderItem, Order, Contact)
 
 
@@ -75,12 +75,21 @@ class ShopSerializer(serializers.ModelSerializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     """
-    Сериализатор позиции заказа
+    Сериализатор для отображения позиции заказа
     """
-    # product = serializers.CharField(read_only=True, source="product.product.name")
-    # shop = serializers.CharField(read_only=True, source="shop.name")
-    # price_rrc = serializers.IntegerField(read_only=True, source="product.price_rrc")
+    product = serializers.CharField(read_only=True, source="product.product.name")
+    shop = serializers.CharField(read_only=True, source="shop.name")
+    price_rrc = serializers.IntegerField(read_only=True, source="product.price_rrc")
 
+    class Meta:
+        model = OrderItem
+        fields = ['id', 'product', 'shop', 'quantity', 'price_rrc', 'order']
+
+
+class OrderItemSaveSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор для сохранения позиции заказа
+    """
     class Meta:
         model = OrderItem
         fields = ['id', 'product', 'shop', 'quantity', 'order']

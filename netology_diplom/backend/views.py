@@ -11,10 +11,10 @@ from rest_framework.generics import ListAPIView
 from yaml import load as load_yaml, Loader
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import (User, Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
+from .models import (Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
                             Order, OrderItem, Contact)
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer,
-                          OrderSerializer, OrderItemSerializer)
+                          OrderSerializer, OrderItemSaveSerializer)
 from .filters import ProductInfoFilter
 from .signals import new_order
 
@@ -245,7 +245,7 @@ class BasketView(APIView):
 
         for order_item in items_dict:
             order_item.update({'order': basket.id})
-            serializer = OrderItemSerializer(data=order_item)
+            serializer = OrderItemSaveSerializer(data=order_item)
             if serializer.is_valid():
                 try:
                     serializer.save()
