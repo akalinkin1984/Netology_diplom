@@ -64,7 +64,7 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['id', 'order', 'product', 'shop', 'quantity', ]
+    list_display = ['id', 'order', 'product_info', 'shop', 'quantity', ]
     list_filter = ['order__dt', ]
 
 

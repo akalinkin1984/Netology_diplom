@@ -194,7 +194,7 @@ class OrderView(APIView):
         Получить мои заказы
         """
         orders = Order.objects.filter(user_id=request.user.id).exclude(status='basket').annotate(
-            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price_rrc')))
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price_rrc')))
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
@@ -239,7 +239,7 @@ class BasketView(APIView):
         Получить корзину
         """
         basket = Order.objects.filter(user_id=request.user.id, status='basket').annotate(
-            total_sum=Sum(F('order_items__quantity') * F('order_items__product__price_rrc')))
+            total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price_rrc')))
         serializer = OrderSerializer(basket, many=True)
         return Response(serializer.data)
 
@@ -355,9 +355,9 @@ class PartnerOrders(APIView):
         if request.user.type != 'shop':
             return Response({'status': False, 'error': 'Только для магазинов'}, status=403)
 
-        order = (Order.objects.filter(order_items__product__shop=request.user.shop)
+        order = (Order.objects.filter(order_items__product_info__shop=request.user.shop)
                  .exclude(status='basket')
-                 .annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product__price_rrc'))))
+                 .annotate(total_sum=Sum(F('order_items__quantity') * F('order_items__product_info__price_rrc'))))
 
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)

@@ -267,7 +267,7 @@ class OrderItem(models.Model):
 
     order = models.ForeignKey(Order, verbose_name='Заказ', related_name='order_items', blank=True,
                               on_delete=models.CASCADE)
-    product = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте', related_name='order_items',
+    product_info = models.ForeignKey(ProductInfo, verbose_name='Информация о продукте', related_name='order_items',
                                 blank=True, on_delete=models.CASCADE)
     shop = models.ForeignKey(Shop, verbose_name='Магазин', related_name='order_items', blank=True,
                              on_delete=models.CASCADE)
@@ -278,4 +278,4 @@ class OrderItem(models.Model):
         verbose_name_plural = "Список заказанных позиций"
 
     def __str__(self):
-        return f'{self.order} - {self.product}'
+        return f'{self.order} - {self.product_info}'

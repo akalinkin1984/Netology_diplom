@@ -77,9 +77,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
     """
     Сериализатор для отображения позиции заказа
     """
-    product = serializers.CharField(read_only=True, source="product.product.name")
+    product = serializers.CharField(read_only=True, source="product_info.product.name")
     shop = serializers.CharField(read_only=True, source="shop.name")
-    price_rrc = serializers.IntegerField(read_only=True, source="product.price_rrc")
+    price_rrc = serializers.IntegerField(read_only=True, source="product_info.price_rrc")
 
     class Meta:
         model = OrderItem
@@ -92,7 +92,7 @@ class OrderItemSaveSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = OrderItem
-        fields = ['id', 'product', 'shop', 'quantity', 'order']
+        fields = ['id', 'product_info', 'shop', 'quantity', 'order']
 
 
 class OrderSerializer(serializers.ModelSerializer):
