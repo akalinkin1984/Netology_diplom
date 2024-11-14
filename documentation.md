@@ -5,9 +5,9 @@
 
 PG_NAME=db - имя базы данных  
 PG_USER=postgres - имя пользователя базы данных  
-PG_PASSWORD=postgres - имя пользователя базы данных  
+PG_PASSWORD=postgres - пароль пользователя базы данных  
 PG_HOST=127.0.0.1 - адрес хоста базы данных  
-PG_PORT=5432 - адрес хоста базы данных  
+PG_PORT=5432 - порт базы данных  
 
 EMAIL_HOST=smtp.yandex.ru - хост SMTP-сервера  
 EMAIL_PORT=465 - порт SMTP-сервера  
