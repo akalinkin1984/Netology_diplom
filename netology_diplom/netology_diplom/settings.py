@@ -151,7 +151,7 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 EMAIL_USE_SSL = True
 
 DJOSER = {
-    'PASSWORD_RESET_CONFIRM_URL': 'api/v1/auth/users/reset_password_confirm/?uid={uid}&token={token}&new_password=',
+    'PASSWORD_RESET_CONFIRM_URL': 'api/v1/auth/users/reset_password_confirm/?uid={uid}&token={token}',
     'ACTIVATION_URL': 'api/v1/auth/users/activation/?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
