@@ -19,5 +19,8 @@ python manage.py makemigrations
 python manage.py migrate  
 python manage.py runserver
 
+Запуск celery:  
+celery -A netology_diplom.celeryapp worker
+
 Конечные точки описаны в [документации сгенерированной в PostMan](https://documenter.getpostman.com/view/39161558/2sAY55adNw)
 
