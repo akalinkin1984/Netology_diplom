@@ -1,9 +1,12 @@
 import os
 
+from django.conf import settings
+from django.core.mail import send_mail
 from django.db import IntegrityError
 from celery import shared_task
-from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter
 from yaml import load as load_yaml, Loader
+
+from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, User
 
 
 @shared_task
@@ -59,3 +62,29 @@ def update_shop_price_list(path, user_id):
             return {'status': True}
     except Exception as e:
         return {'status': False, 'error': str(e)}
+
+
+@shared_task
+def send_new_order_email_task(user_id, order_id):
+    """
+    Задача для отправки писем при размещении заказа
+    """
+    user = User.objects.get(id=user_id)
+    send_mail(
+        "Обновление статуса заказа",
+        f"Ваш заказ №{order_id} сформирован",
+        settings.EMAIL_HOST_USER,
+        [user.email],
+    )
+
+    order = Order.objects.get(id=order_id)
+    shop_emails = order.order_items.values_list('shop__user__email', flat=True).distinct()
+
+    for email in shop_emails:
+        send_mail(
+            'Новый заказ',
+            'У вас новый заказ. Пожалуйста, проверьте свой аккаунт.',
+            settings.EMAIL_HOST_USER,
+            [email],
+            fail_silently=False,
+        )

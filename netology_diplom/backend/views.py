@@ -1,8 +1,6 @@
 import json
 
 from celery.result import AsyncResult
-from django.conf import settings
-from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Q, F, Sum
 from rest_framework.filters import SearchFilter
@@ -16,8 +14,7 @@ from .models import (Shop, Category, ProductInfo, Order, OrderItem, Contact)
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer,
                           OrderSerializer, OrderItemSaveSerializer)
 from .filters import ProductInfoFilter
-from .signals import new_order
-from .tasks import update_shop_price_list
+from .tasks import update_shop_price_list, send_new_order_email_task
 from netology_diplom.celeryapp import app
 
 
@@ -168,33 +165,35 @@ class OrderView(APIView):
 
     def post(self, request, *args, **kwargs):
         """
-        Разместить заказ
+        Разместить заказ и отправить задачу на отправку писем
         """
         if 'id' in request.data and 'contact' in request.data:
             try:
                 Order.objects.filter(user_id=request.user.id, id=request.data['id']).update(
                     contact_id=request.data['contact'],
                     status='new')
-                new_order.send(sender=self.__class__, user_id=request.user.id, order_id=request.data['id'])
+                user_id = request.user.id
+                order_id = request.data.get('id')
 
-                order = Order.objects.get(id=request.data['id'])
-                shop_emails = order.order_items.values_list('shop__user__email', flat=True).distinct()
+                task = send_new_order_email_task.delay(user_id, order_id)
 
-                for email in shop_emails:
-                    send_mail(
-                        'Новый заказ',
-                        'У вас новый заказ. Пожалуйста, проверьте свой аккаунт.',
-                        settings.EMAIL_HOST_USER,
-                        [email],
-                        fail_silently=False,
-                    )
-
-                return Response({'status': True})
+                return Response({'status': True, 'task_id': task.id})
             except IntegrityError:
                 return Response({'status': False, 'error': 'Неправильно указаны аргументы'})
 
         return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
 
+    def get(self, request, *args, **kwargs):
+        """
+        Получить статус задачи отправки писем
+        """
+        task_id = request.data.get('task_id')
+        task = AsyncResult(task_id, app=app)
+
+        if task.status == 'FAILURE':
+            return Response({'status': 'Failed to process'})
+
+        return Response({'status': task.status})
 
 class BasketView(APIView):
     """
