@@ -1,6 +1,6 @@
-import os
 import json
 
+from celery.result import AsyncResult
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import IntegrityError
@@ -10,15 +10,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
-from yaml import load as load_yaml, Loader
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .models import (Shop, Category, Product, ProductInfo, Parameter, ProductParameter,
-                            Order, OrderItem, Contact)
+from .models import (Shop, Category, ProductInfo, Order, OrderItem, Contact)
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer,
                           OrderSerializer, OrderItemSaveSerializer)
 from .filters import ProductInfoFilter
 from .signals import new_order
+from .tasks import update_shop_price_list
+from netology_diplom.celeryapp import app
 
 
 class PartnerUpdate(APIView):
@@ -29,61 +29,29 @@ class PartnerUpdate(APIView):
 
     def post(self, request, *args, **kwargs):
         """
-        Обновить прайс магазина.
+        Отправить задачу на обновление прайса магазина.
         """
         if request.user.type != 'shop':
             return Response({'status': False, 'error': 'Только для магазинов'}, status=403)
 
         path = request.data.get('path')
+        user = request.user.id
 
-        if not os.path.isfile(path):
-            return Response({'status': False, 'error': 'Файл не существует'}, status=400)
+        task = update_shop_price_list.delay(path, user)
 
-        with open(path) as file:
-            data = load_yaml(file, Loader=Loader)
+        return Response({'status': True, 'task_id': task.id})
 
-            try:
-                shop = Shop.objects.get(name=data['shop'])
-            except Shop.DoesNotExist:
-                try:
-                    shop = Shop.objects.create(name=data['shop'], user_id=request.user.id)
-                except IntegrityError:
-                    return Response({'status': False, 'error': 'У Вас может быть только один магазин'},
-                                    status=403)
-            else:
-                if shop.user.id != request.user.id:
-                    return Response({'status': False, 'error': 'У Вас нет доступа к этому магазину'},
-                                             status=403)
+    def get(self, request, *args, **kwargs):
+        """
+        Получить статус задачи обновления прайса
+        """
+        task_id = request.data.get('task_id')
+        task = AsyncResult(task_id, app=app)
 
-            for category in data['categories']:
-                category_object, _ = Category.objects.get_or_create(id=category['id'], name=category['name'])
-                category_object.shops.add(shop.id)
-                category_object.save()
+        if task.status == 'FAILURE':
+            return Response({'status': 'Failed to process'})
 
-            ProductInfo.objects.filter(shop_id=shop.id).delete()
-
-            for item in data['goods']:
-                product, _ = Product.objects.get_or_create(name=item['name'], category_id=item['category'])
-
-                product_info = ProductInfo.objects.create(
-                    product_id=product.id,
-                    external_id=item['id'],
-                    model=item['model'],
-                    price=item['price'],
-                    price_rrc=item['price_rrc'],
-                    quantity=item['quantity'],
-                    shop_id=shop.id
-                )
-
-                for name, value in item['parameters'].items():
-                    parameter_object, _ = Parameter.objects.get_or_create(name=name)
-                    ProductParameter.objects.create(
-                        product_info_id=product_info.id,
-                        parameter_id=parameter_object.id,
-                        value=value
-                    )
-
-            return Response({'status': True})
+        return Response({'status': task.status})
 
 
 class ContactView(APIView):

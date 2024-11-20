@@ -14,6 +14,9 @@ EMAIL_PORT=465 - порт SMTP-сервера
 EMAIL_HOST_USER=xxxxx@xxxxx.xx - имя пользователя SMTP-сервера  
 EMAIL_HOST_PASSWORD=xxxxxxxxxxx - пароль SMTP-сервера  
 
+Так же нужно установить redis:  
+sudo apt install redis
+
 Для запуска выполните команды:  
 python manage.py makemigrations  
 python manage.py migrate  
