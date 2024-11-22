@@ -17,13 +17,19 @@ EMAIL_HOST_PASSWORD=xxxxxxxxxxx - пароль SMTP-сервера
 Так же нужно установить redis:  
 sudo apt install redis
 
+Команды выполнять относительно директории:  
+/Netology_diplom/netology_diplom
+
 Для запуска выполните команды:  
 python manage.py makemigrations  
 python manage.py migrate  
 python manage.py runserver
 
 Запуск celery:  
-celery -A netology_diplom.celeryapp worker
+celery -A netology_diplom.celeryapp worker  
+
+Запуск тестов с получением метрики покрытия кода тестами:  
+pytest --cov=.
 
 Конечные точки описаны в [документации сгенерированной в PostMan](https://documenter.getpostman.com/view/39161558/2sAY55adNw)
 

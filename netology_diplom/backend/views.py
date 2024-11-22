@@ -124,7 +124,7 @@ class ProductInfoView(ListAPIView):
     """
     Класс для поиска товаров
     """
-    queryset = ProductInfo.objects.all()
+    queryset = ProductInfo.objects.all().order_by('id')
     serializer_class = ProductInfoSerializer
     filterset_class = ProductInfoFilter
     filter_backends = [DjangoFilterBackend, SearchFilter]

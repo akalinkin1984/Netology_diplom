@@ -1,0 +1,2 @@
+[run]
+omit = tests/*, .venv/*, manage.py, netology_diplom/*, *tests.py
