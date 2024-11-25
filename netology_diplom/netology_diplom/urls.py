@@ -21,11 +21,12 @@ from django.conf.urls.static import static
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
-from backend.views import CustomUserViewSet
+from backend.views import CustomUserViewSet, ProductImageViewSet
 
 
 router = DefaultRouter()
 router.register(r'users', CustomUserViewSet)
+router.register(r'product_images', ProductImageViewSet, basename='product_images')
 
 urlpatterns = [
     path('admin/', admin.site.urls),

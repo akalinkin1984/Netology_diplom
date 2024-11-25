@@ -11,10 +11,11 @@ from rest_framework.generics import ListAPIView
 from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from rest_framework.viewsets import ModelViewSet
 
-from .models import Shop, Category, ProductInfo, Order, OrderItem, Contact, User
+from .models import Shop, Category, ProductInfo, Order, OrderItem, Contact, Product
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer,
-                          OrderSerializer, OrderItemSaveSerializer, UserAvatarSerializer)
+                          OrderSerializer, OrderItemSaveSerializer, UserAvatarSerializer, ProductImageSerializer)
 from .filters import ProductInfoFilter
 from .tasks import update_shop_price_list, send_new_order_email_task, create_thumbnails
 from netology_diplom.celeryapp import app
@@ -334,7 +335,7 @@ class PartnerOrders(APIView):
 
 class CustomUserViewSet(UserViewSet):
     """
-    Класс для создания миниатюр аваторов пользователей
+    Класс для загрузки миниатюр аваторов пользователей
     """
     @action(detail=True, methods=['POST'], serializer_class=UserAvatarSerializer)
     def avatar(self, request, *args, **kwargs):
@@ -348,5 +349,32 @@ class CustomUserViewSet(UserViewSet):
                 create_thumbnails.delay(f"{user._meta.app_label}.{user._meta.model_name}", user.pk, 'avatar')
 
             return Response({'status': 'Аватар загружен. Начато создание эскизов.'})
+
+        return Response(serializer.errors, status=400)
+
+
+class ProductImageViewSet(ModelViewSet):
+    """
+    Класс для загрузки миниатюр картинок товаров
+    """
+    queryset = Product.objects.all()
+    serializer_class = ProductImageSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=True, methods=['POST'], serializer_class=ProductImageSerializer)
+    def upload_image(self, request, *args, **kwargs):
+        product = self.get_object()
+        if not product.category.shops.filter(user=request.user).exists():
+            return Response({'error': 'Вы не имеете права загружать изображения для этого продукта.'}, status=403)
+        serializer = self.get_serializer(product, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            if hasattr(product, 'image') and product.image:
+                create_thumbnails.delay(f"{product._meta.app_label}.{product._meta.model_name}", product.pk,
+                                        'image')
+
+            return Response({'status': 'Изображение загружено. Начато создание эскизов.'})
 
         return Response(serializer.errors, status=400)

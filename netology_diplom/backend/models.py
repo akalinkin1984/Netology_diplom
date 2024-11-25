@@ -170,6 +170,7 @@ class Product(models.Model):
     """
 
     name = models.CharField(max_length=100, verbose_name='Название товара')
+    image = models.ImageField(upload_to='product_images/', verbose_name='Изображение товара', null=True, blank=True)
     category = models.ForeignKey(Category, verbose_name='Категория', related_name='products', on_delete=models.CASCADE)
 
     class Meta:

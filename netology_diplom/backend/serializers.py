@@ -111,7 +111,7 @@ class OrderSerializer(serializers.ModelSerializer):
 
 class UserAvatarSerializer(UserSerializer):
     """
-    Сериализатор аватара пользователяо
+    Сериализатор аватара пользователя
     """
     avatar = serializers.ImageField(required=False)
 
@@ -128,3 +128,12 @@ class UserAvatarSerializer(UserSerializer):
                 'large': thumbnail_url(instance.avatar, 'large'),
             }
         return ret
+
+
+class ProductImageSerializer(serializers.ModelSerializer):
+    """
+    Сериализатор картинки товара
+    """
+    class Meta:
+        model = Product
+        fields = ['id', 'image']

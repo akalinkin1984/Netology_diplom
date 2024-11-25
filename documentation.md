@@ -20,13 +20,13 @@ sudo apt install redis
 Команды выполнять относительно директории:  
 /Netology_diplom/netology_diplom
 
+Запуск celery:  
+celery -A netology_diplom.celeryapp worker 
+
 Для запуска выполните команды:  
 python manage.py makemigrations  
 python manage.py migrate  
 python manage.py runserver
-
-Запуск celery:  
-celery -A netology_diplom.celeryapp worker  
 
 Запуск тестов с получением метрики покрытия кода тестами:  
 pytest --cov=.
