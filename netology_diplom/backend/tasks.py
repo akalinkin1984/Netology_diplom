@@ -3,8 +3,10 @@ import os
 from django.conf import settings
 from django.core.mail import send_mail
 from django.db import IntegrityError
+from django.apps import apps
 from celery import shared_task
 from yaml import load as load_yaml, Loader
+from easy_thumbnails.files import get_thumbnailer
 
 from .models import Shop, Category, Product, ProductInfo, Parameter, ProductParameter, Order, User
 
@@ -88,3 +90,19 @@ def send_new_order_email_task(user_id, order_id):
             [email],
             fail_silently=False,
         )
+
+
+@shared_task
+def create_thumbnails(model_path, pk, field):
+    """
+    Задача для создания миниатюр
+    """
+    model = apps.get_model(model_path)
+    instance = model.objects.get(pk=pk)
+    field_file = getattr(instance, field)
+
+    if field_file:
+        thumbnailer = get_thumbnailer(field_file)
+        sizes = {'small': (100, 100), 'medium': (300, 300), 'large': (600, 600)}
+        for size_name, size in sizes.items():
+            thumbnailer.get_thumbnail({'size': size, 'crop': True})

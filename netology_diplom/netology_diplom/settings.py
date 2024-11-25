@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'djoser',
     'django_filters',
     'baton.autodiscover',
+    'easy_thumbnails',
 ]
 
 MIDDLEWARE = [
@@ -158,7 +159,9 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    'SERIALIZERS': {},
+    'SERIALIZERS': {
+        'user': 'backend.serializers.UserAvatarSerializer',
+    },
 }
 
 REST_FRAMEWORK = {
@@ -180,3 +183,14 @@ REST_FRAMEWORK = {
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
+
+THUMBNAIL_ALIASES = {
+    '': {
+        'small': {'size': (100, 100), 'crop': True},
+        'medium': {'size': (300, 300), 'crop': True},
+        'large': {'size': (600, 600), 'crop': True},
+    },
+}
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

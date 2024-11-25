@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from djoser.serializers import UserSerializer
+from easy_thumbnails.templatetags.thumbnail import thumbnail_url
 
 from .models import (Category, Shop, ProductInfo, Product, ProductParameter,
                             OrderItem, Order, Contact)
@@ -105,3 +107,24 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ['id', 'dt', 'status', 'order_items', 'total_sum']
+
+
+class UserAvatarSerializer(UserSerializer):
+    """
+    Сериализатор аватара пользователяо
+    """
+    avatar = serializers.ImageField(required=False)
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ('avatar',)
+
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+        if instance.avatar:
+            ret['avatar'] = {
+                'original': instance.avatar.url,
+                'small': thumbnail_url(instance.avatar, 'small'),
+                'medium': thumbnail_url(instance.avatar, 'medium'),
+                'large': thumbnail_url(instance.avatar, 'large'),
+            }
+        return ret

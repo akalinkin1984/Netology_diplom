@@ -8,13 +8,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.generics import ListAPIView
+from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 
-from .models import (Shop, Category, ProductInfo, Order, OrderItem, Contact)
+from .models import Shop, Category, ProductInfo, Order, OrderItem, Contact, User
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer, ShopSerializer,
-                          OrderSerializer, OrderItemSaveSerializer)
+                          OrderSerializer, OrderItemSaveSerializer, UserAvatarSerializer)
 from .filters import ProductInfoFilter
-from .tasks import update_shop_price_list, send_new_order_email_task
+from .tasks import update_shop_price_list, send_new_order_email_task, create_thumbnails
 from netology_diplom.celeryapp import app
 
 
@@ -328,3 +330,23 @@ class PartnerOrders(APIView):
 
         serializer = OrderSerializer(order, many=True)
         return Response(serializer.data)
+
+
+class CustomUserViewSet(UserViewSet):
+    """
+    Класс для создания миниатюр аваторов пользователей
+    """
+    @action(detail=True, methods=['POST'], serializer_class=UserAvatarSerializer)
+    def avatar(self, request, *args, **kwargs):
+        user = self.get_object()
+        serializer = self.get_serializer(user, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            if hasattr(user, 'avatar') and user.avatar:
+                create_thumbnails.delay(f"{user._meta.app_label}.{user._meta.model_name}", user.pk, 'avatar')
+
+            return Response({'status': 'Аватар загружен. Начато создание эскизов.'})
+
+        return Response(serializer.errors, status=400)

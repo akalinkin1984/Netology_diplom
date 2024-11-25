@@ -16,11 +16,20 @@ Including another URLconf
 """
 # from django.contrib import admin
 from baton.autodiscover import admin
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 
+from backend.views import CustomUserViewSet
+
+
+router = DefaultRouter()
+router.register(r'users', CustomUserViewSet)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('baton/', include('baton.urls')),
-    path('api/v1/', include('backend.urls', namespace='backend'))
-]
+    path('api/v1/', include('backend.urls', namespace='backend')),
+    path('api/v1/', include(router.urls))
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

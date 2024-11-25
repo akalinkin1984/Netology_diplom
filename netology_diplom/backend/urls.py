@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from .views import (PartnerUpdate, ContactView, ProductInfoView, CategoryView,
-                    ShopView, OrderView, BasketView, PartnerState, PartnerOrders)
+                    ShopView, OrderView, BasketView, PartnerState, PartnerOrders, CustomUserViewSet)
 
 
 app_name = 'backend'
@@ -17,4 +17,5 @@ urlpatterns = [
     path('basket/', BasketView.as_view(), name='basket'),
     path('partner/status/', PartnerState.as_view(), name='partner-status'),
     path('partner/orders/', PartnerOrders.as_view(), name='partner-orders'),
+    path('users/', CustomUserViewSet.as_view({'post': 'avatar'}), name='user-avatar')
     ]

@@ -10,7 +10,7 @@ class UserAdmin(UserAdmin):
     """Настройка панели управления пользователями в административной части сайта"""
 
     fieldsets = (
-        (None, {'fields': ('email', 'password', 'type')}),
+        (None, {'fields': ('avatar', 'email', 'password', 'type')}),
         ('Personal info', {
             'fields': ('first_name', 'last_name')
         }),
