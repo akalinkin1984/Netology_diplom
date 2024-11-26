@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'django_filters',
     'baton.autodiscover',
     'easy_thumbnails',
+    'cacheops',
 ]
 
 MIDDLEWARE = [
@@ -194,3 +195,14 @@ THUMBNAIL_ALIASES = {
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+CACHEOPS_REDIS = "redis://localhost:6379/2"
+CACHEOPS = {
+    'auth.user': {'ops': 'get', 'timeout': 60*15},
+    'auth.*': {'ops': {'fetch', 'get'}, 'timeout': 60*60},
+    'auth.permission': {'ops': 'all', 'timeout': 60*60},
+    '*.*': {'ops': (), 'timeout': 60*60},
+    '*.*': {'timeout': 60*60},
+    'some_app.*': None,
+}
+CACHEOPS_DEGRAD_ON_FAILURE = True
