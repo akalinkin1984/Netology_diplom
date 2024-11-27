@@ -1,7 +1,7 @@
 ## Документация по работе с API
 
-Проект настроен для работы с PostgreSQL. Можете использовать другую БД, изменив в настройках.
-В корне проекта необходимо создать файл .env, примерно с таким содержимым:
+Проект настроен для работы с PostgreSQL. Можете использовать другую БД, изменив в настройках.  
+В корне проекта необходимо создать файл .env, примерно с таким содержимым:  
 
 PG_NAME=db - имя базы данных  
 PG_USER=postgres - имя пользователя базы данных  
@@ -17,13 +17,16 @@ EMAIL_HOST_PASSWORD=xxxxxxxxxxx - пароль SMTP-сервера
 Так же нужно установить redis:  
 sudo apt install redis
 
-Команды выполнять относительно директории:  
+Для установки зависимостей, находясь в корне проекта выполнить:  
+pip install -r requirements.txt
+
+Далее команды выполнять относительно директории:  
 /Netology_diplom/netology_diplom
 
 Запуск celery:  
 celery -A netology_diplom.celeryapp worker 
 
-Для запуска выполните команды:  
+Запуск приложения:  
 python manage.py makemigrations  
 python manage.py migrate  
 python manage.py runserver
@@ -33,3 +36,4 @@ pytest --cov=.
 
 Конечные точки описаны в [документации сгенерированной в PostMan](https://documenter.getpostman.com/view/39161558/2sAY55adNw)
 
+Документация сгенерированная в DRF Spectacular будет доступна по адресу api/docs/.

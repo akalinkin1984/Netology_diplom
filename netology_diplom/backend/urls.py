@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from .views import (PartnerUpdate, ContactView, ProductInfoView, CategoryView,
-                    ShopView, OrderView, BasketView, PartnerState, PartnerOrders, CustomUserViewSet)
+                    ShopView, OrderView, BasketView, PartnerState, PartnerOrders)
 
 
 app_name = 'backend'

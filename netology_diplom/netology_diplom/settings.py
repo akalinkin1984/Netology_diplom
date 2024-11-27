@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'baton.autodiscover',
     'easy_thumbnails',
     'cacheops',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -178,7 +179,8 @@ REST_FRAMEWORK = {
     'DEFAULT_THROTTLE_RATES': {
         'anon': '30/minute',
         'user': '60/minute'
-    }
+    },
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 CELERY_BROKER_URL = "redis://localhost:6379/0"

@@ -1,6 +1,7 @@
 from django_filters import rest_framework as filters
 from .models import ProductInfo
 
+
 class ProductInfoFilter(filters.FilterSet):
     """
     Фильтр для поиска продуктов
