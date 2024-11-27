@@ -9,6 +9,7 @@ urlpatterns = [
     path('partner/update/', PartnerUpdate.as_view(), name='partner-update'),
     path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
+    path('auth/', include('djoser.social.urls')),
     path('user/contact/', ContactView.as_view(), name='user-contact'),
     path('products/', ProductInfoView.as_view(), name='products'),
     path('categories/', CategoryView.as_view(), name='categories'),
@@ -17,4 +18,5 @@ urlpatterns = [
     path('basket/', BasketView.as_view(), name='basket'),
     path('partner/status/', PartnerState.as_view(), name='partner-status'),
     path('partner/orders/', PartnerOrders.as_view(), name='partner-orders'),
+    path('', include('social_django.urls', namespace='social')),
     ]
