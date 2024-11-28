@@ -29,11 +29,13 @@ router = DefaultRouter()
 router.register(r'users', CustomUserViewSet)
 router.register(r'product_images', ProductImageViewSet, basename='product_images')
 
-urlpatterns = [
+urlpatterns = ([
     path('admin/', admin.site.urls),
     path('baton/', include('baton.urls')),
     path('api/v1/', include('backend.urls', namespace='backend')),
     path('api/v1/', include(router.urls)),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+    + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    + [path('silk/', include('silk.urls', namespace='silk'))])
