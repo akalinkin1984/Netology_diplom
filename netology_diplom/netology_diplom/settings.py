@@ -164,7 +164,7 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/complete/vk-oauth2/'],
+    # 'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/complete/vk-oauth2/'],
     'SERIALIZERS': {
         'user': 'backend.serializers.UserAvatarSerializer',
     },

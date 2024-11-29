@@ -1,10 +1,13 @@
 from rest_framework import serializers
-from djoser.serializers import UserSerializer
+from djoser.serializers import UserSerializer, UserCreateSerializer
 from easy_thumbnails.templatetags.thumbnail import thumbnail_url
+from django.contrib.auth import get_user_model
 
 from .models import (Category, Shop, ProductInfo, Product, ProductParameter,
                             OrderItem, Order, Contact)
 
+
+User = get_user_model()
 
 class ContactSerializer(serializers.ModelSerializer):
     """
@@ -137,3 +140,22 @@ class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'image']
+
+
+# class CustomUserCreateSerializer(UserCreateSerializer):
+#     """
+#     Сериализатор создания пользователя
+#     """
+#     class Meta(UserCreateSerializer.Meta):
+#         model = User
+#         fields = ('id', 'email', 'first_name', 'last_name', 'password')
+
+
+# class CustomUserSerializer(UserSerializer):
+#     """
+#     Сериализатор пользователя
+#     """
+#     class Meta(UserSerializer.Meta):
+#         model = User
+#         fields = ('id', 'email', 'first_name', 'last_name')
+#         read_only_fields = ('id',)
