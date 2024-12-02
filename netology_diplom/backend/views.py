@@ -12,11 +12,6 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework.viewsets import ModelViewSet
-from django.contrib.auth import get_user_model
-from social_django.utils import load_strategy, load_backend
-from social_core.exceptions import MissingBackend, AuthForbidden
-from social_core.backends.vk import VKOAuth2
-from social_core.exceptions import AuthException
 
 from .models import Shop, Category, ProductInfo, Order, OrderItem, Contact, Product
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer,
@@ -26,8 +21,6 @@ from .filters import ProductInfoFilter
 from .tasks import update_shop_price_list, send_new_order_email_task, create_thumbnails
 from netology_diplom.celeryapp import app
 
-
-User = get_user_model()
 
 class PartnerUpdate(APIView):
     """
@@ -386,79 +379,3 @@ class ProductImageViewSet(ModelViewSet):
             return Response({'status': 'Изображение загружено. Начато создание эскизов.'})
 
         return Response(serializer.errors, status=400)
-
-
-# class VKUserRegistrationView(APIView):
-#     """
-#     Класс для регистрации пользователя через токен VK
-#     """
-#     def post(self, request):
-#         vk_token = request.data.get('vk_token')
-#         if not vk_token:
-#             return Response({'error': 'Требуется токен VK'}, status=400)
-#
-#         try:
-#             vk_user_data = self.get_vk_user_data(vk_token)
-#
-#             email = vk_user_data.get('email')
-#             if not email:
-#                 return Response({'error': 'Email не указан в VK'}, status=400)
-#
-#             user, created = User.objects.get_or_create(email=email)
-#
-#             if created:
-#                 user.first_name = vk_user_data.get('first_name', '')
-#                 user.last_name = vk_user_data.get('last_name', '')
-#                 user.is_active = True
-#                 user.set_unusable_password()
-#                 user.save()
-#
-#             serializer = UserAvatarSerializer(user)
-#             return Response(serializer.data, status=201 if created else 200)
-#
-#         except Exception as e:
-#             return Response({'error': str(e)}, status=400)
-#
-#     def get_vk_user_data(self, access_token):
-#         vk_backend = VKOAuth2()
-#         try:
-#             return vk_backend.user_data(access_token)
-#         except Exception as e:
-#             raise Exception(f"Не удалось получить данные пользователя из VK: {str(e)}")
-
-
-class VKUserRegistrationView(APIView):
-    """
-    Класс для регистрации пользователя через токен VK
-    """
-    def post(self, request):
-        access_token = request.data.get('access_token')
-        if not access_token:
-            return Response({'error': 'Требуется токен VK'}, status=400)
-
-        try:
-            strategy = load_strategy(request)
-            backend = load_backend(strategy=strategy, name='vk-oauth2', redirect_uri=None)
-
-            user = backend.do_auth(access_token)
-
-            if user:
-                if user.is_active:
-                    if not user.email:
-                        vk_id = backend.get_user_details(backend.get_user_id(access_token))['username']
-                        user.email = f"vk_{vk_id}@example.com"
-                        user.save()
-
-                    serializer = UserAvatarSerializer(user)
-                    return Response(serializer.data)
-                else:
-                    return Response({'error': 'Аккаунт пользователя отключен.'}, status=400)
-            else:
-                return Response({'error': 'Не удалось войти с предоставленными учетными данными.'}, status=400)
-
-        except MissingBackend:
-            return Response({'error': 'Неверный бэкенд'}, status=400)
-        except AuthForbidden as e:
-            return Response({'error': str(e)}, status=403)
-        except Exception as e:
-            return Response({'error': str(e)}, status=400)

@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from .views import (PartnerUpdate, ContactView, ProductInfoView, CategoryView,
-                    ShopView, OrderView, BasketView, PartnerState, PartnerOrders, VKUserRegistrationView)
+                    ShopView, OrderView, BasketView, PartnerState, PartnerOrders)
 
 
 app_name = 'backend'
@@ -18,6 +18,4 @@ urlpatterns = [
     path('basket/', BasketView.as_view(), name='basket'),
     path('partner/status/', PartnerState.as_view(), name='partner-status'),
     path('partner/orders/', PartnerOrders.as_view(), name='partner-orders'),
-    path('', include('social_django.urls', namespace='social')),
-    path('vk-register/', VKUserRegistrationView.as_view(), name='vk-register'),
     ]

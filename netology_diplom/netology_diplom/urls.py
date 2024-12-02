@@ -36,6 +36,7 @@ urlpatterns = ([
     path('api/v1/', include(router.urls)),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
+    path('silk/', include('silk.urls', namespace='silk')),
 ]
     + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    + [path('silk/', include('silk.urls', namespace='silk'))])
+)

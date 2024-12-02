@@ -147,6 +147,7 @@ AUTH_USER_MODEL = 'backend.User'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+#SMTP
 EMAIL_HOST = os.getenv('EMAIL_HOST')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 
@@ -158,18 +159,20 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 
 EMAIL_USE_SSL = True
 
+#djoser
 DJOSER = {
     'PASSWORD_RESET_CONFIRM_URL': 'api/v1/auth/users/reset_password_confirm/?uid={uid}&token={token}',
     'ACTIVATION_URL': 'api/v1/auth/users/activation/?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    # 'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/complete/vk-oauth2/'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/complete/google-oauth2/'],
     'SERIALIZERS': {
         'user': 'backend.serializers.UserAvatarSerializer',
     },
 }
 
+#restframework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
@@ -187,10 +190,12 @@ REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
+#celery
 CELERY_BROKER_URL = "redis://localhost:6379/0"
 CELERY_BROKER_TRANSPORT = 'redis'
 CELERY_RESULT_BACKEND = "redis://localhost:6379/1"
 
+#easy-thumbnails
 THUMBNAIL_ALIASES = {
     '': {
         'small': {'size': (100, 100), 'crop': True},
@@ -202,6 +207,7 @@ THUMBNAIL_ALIASES = {
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+#django-cacheops
 CACHEOPS_REDIS = "redis://localhost:6379/2"
 CACHEOPS = {
     'auth.user': {'ops': 'get', 'timeout': 60*15},
@@ -213,26 +219,36 @@ CACHEOPS = {
 }
 CACHEOPS_DEGRAD_ON_FAILURE = True
 
+#google
 AUTHENTICATION_BACKENDS = (
-    'social_core.backends.vk.VKOAuth2',
+    'social_core.backends.google.GoogleOAuth2',
     'django.contrib.auth.backends.ModelBackend',
 )
+
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
-SOCIAL_AUTH_VK_OAUTH2_KEY = os.getenv('SOCIAL_AUTH_VK_OAUTH2_KEY')
-SOCIAL_AUTH_VK_OAUTH2_SECRET = os.getenv('SOCIAL_AUTH_VK_OAUTH2_SECRET')
-SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_KEY')
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_SECRET')
+
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+]
+
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
     'social_core.pipeline.social_auth.auth_allowed',
     'social_core.pipeline.social_auth.social_user',
     'social_core.pipeline.user.get_username',
+    'social_core.pipeline.social_auth.associate_by_email',
     'social_core.pipeline.user.create_user',
     'social_core.pipeline.social_auth.associate_user',
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
 
+#django-silk
 SILKY_PYTHON_PROFILER = True
 SILKY_MAX_RECORDED_REQUESTS = 1000
 SILKY_META = True
