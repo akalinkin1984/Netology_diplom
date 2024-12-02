@@ -166,7 +166,10 @@ DJOSER = {
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000/complete/google-oauth2/'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': [
+        'http://localhost:8000/auth-google/complete/google-oauth2/',
+        'http://127.0.0.1:8000/auth-google/complete/google-oauth2/',
+    ],
     'SERIALIZERS': {
         'user': 'backend.serializers.UserAvatarSerializer',
     },
@@ -247,6 +250,8 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
+
+SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/api/v1/auth/users/me/'
 
 #django-silk
 SILKY_PYTHON_PROFILER = True

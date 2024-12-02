@@ -14,6 +14,9 @@ EMAIL_PORT=465 - порт SMTP-сервера
 EMAIL_HOST_USER=xxxxx@xxxxx.xx - имя пользователя SMTP-сервера  
 EMAIL_HOST_PASSWORD=xxxxxxxxxxx - пароль SMTP-сервера  
 
+GOOGLE_KEY=xxxxxxxxxx - ID приложения GOOGLE  
+GOOGLE_SECRET=xxxxxxxxxx - SECRET приложения GOOGLE  
+
 Так же нужно установить redis:  
 sudo apt install redis
 
@@ -36,4 +39,5 @@ pytest --cov=.
 
 Конечные точки описаны в [документации сгенерированной в PostMan](https://documenter.getpostman.com/view/39161558/2sAY55adNw)
 
-Документация сгенерированная в DRF Spectacular будет доступна по адресу api/docs/.
+Документация сгенерированная в DRF Spectacular доступна по адресу api/docs/.  
+Панель для анализа и отладки приложения через django-silk доступна по адресу silk/.
