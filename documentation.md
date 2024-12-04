@@ -26,6 +26,9 @@ pip install -r requirements.txt
 Далее команды выполнять относительно директории:  
 /Netology_diplom/netology_diplom
 
+Запуск тестов с получением метрики покрытия кода тестами:  
+pytest --cov=.
+
 Запуск celery:  
 celery -A netology_diplom.celeryapp worker --loglevel=info 
 
@@ -34,10 +37,11 @@ python manage.py makemigrations
 python manage.py migrate  
 python manage.py runserver
 
-Запуск тестов с получением метрики покрытия кода тестами:  
-pytest --cov=.
-
 Конечные точки описаны в [документации сгенерированной в PostMan](https://documenter.getpostman.com/view/39161558/2sAY55adNw)
 
 Документация сгенерированная в DRF Spectacular доступна по адресу api/docs/.  
-Панель для анализа и отладки приложения через django-silk доступна по адресу silk/.
+Панель для анализа и отладки приложения через django-silk доступна по адресу silk/.  
+
+Для авторизации через GOOGLE, в браузере, перейдите по ссылке:  
+http://localhost:8000/api/v1/auth/o/google-oauth2/?redirect_uri=http://localhost:8000/api/v1/complete/google-oauth2/.  
+В ответе вернется authorization_url. Нужно перейти по этой ссылке, и далее ввести свои данные GOOGLE-аккаунта.

@@ -18,6 +18,8 @@ from requests.exceptions import HTTPError
 from social_django.utils import load_strategy, load_backend
 from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
 from rest_framework.authtoken.models import Token
+from django.shortcuts import get_object_or_404
+from django.conf import settings
 
 from .models import Shop, Category, ProductInfo, Order, OrderItem, Contact, Product
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer,
@@ -179,31 +181,25 @@ class OrderView(APIView):
         """
         if 'id' in request.data and 'contact' in request.data:
             try:
-                Order.objects.filter(user_id=request.user.id, id=request.data['id']).update(
-                    contact_id=request.data['contact'],
-                    status='new')
+                order = get_object_or_404(Order, id=request.data['id'], user_id=request.user.id)
+
+                order.contact_id = request.data['contact']
+                order.status = 'new'
+                order.save()
+
                 user_id = request.user.id
-                order_id = request.data.get('id')
+                order_id = order.id
 
                 task = send_new_order_email_task.delay(user_id, order_id)
 
                 return Response({'status': True, 'task_id': task.id})
+            except Order.DoesNotExist:
+                return Response({'status': False, 'error': 'Заказ не найден'}, status=404)
             except IntegrityError:
-                return Response({'status': False, 'error': 'Неправильно указаны аргументы'})
+                return Response({'status': False, 'error': 'Неправильно указаны аргументы'}, status=400)
 
-        return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'})
+        return Response({'status': False, 'error': 'Не указаны все необходимые аргументы'}, status=400)
 
-    def get(self, request, *args, **kwargs):
-        """
-        Получить статус задачи отправки писем
-        """
-        task_id = request.data.get('task_id')
-        task = AsyncResult(task_id, app=app)
-
-        if task.status == 'FAILURE':
-            return Response({'status': 'Failed to process'})
-
-        return Response({'status': task.status})
 
 class BasketView(APIView):
     """
@@ -397,7 +393,7 @@ def complete_google_auth(request):
     if code:
         try:
             strategy = load_strategy(request)
-            redirect_uri = request.build_absolute_uri('/api/v1/complete/google-oauth2/')
+            redirect_uri = request.build_absolute_uri(settings.GOOGLE_OAUTH2_REDIRECT_PATH)
             backend = load_backend(strategy=strategy, name='google-oauth2', redirect_uri=redirect_uri)
 
             try:
