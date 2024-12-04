@@ -27,7 +27,7 @@ pip install -r requirements.txt
 /Netology_diplom/netology_diplom
 
 Запуск celery:  
-celery -A netology_diplom.celeryapp worker 
+celery -A netology_diplom.celeryapp worker --loglevel=info 
 
 Запуск приложения:  
 python manage.py makemigrations  

@@ -12,6 +12,12 @@ from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from requests.exceptions import HTTPError
+from social_django.utils import load_strategy, load_backend
+from social_core.exceptions import MissingBackend, AuthTokenError, AuthForbidden
+from rest_framework.authtoken.models import Token
 
 from .models import Shop, Category, ProductInfo, Order, OrderItem, Contact, Product
 from .serializers import (ContactSerializer, ProductInfoSerializer, CategorySerializer,
@@ -379,3 +385,42 @@ class ProductImageViewSet(ModelViewSet):
             return Response({'status': 'Изображение загружено. Начато создание эскизов.'})
 
         return Response(serializer.errors, status=400)
+
+
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def complete_google_auth(request):
+    """
+    Обработка перенаправления после аутентификации Google
+    """
+    code = request.GET.get('code', None)
+    if code:
+        try:
+            strategy = load_strategy(request)
+            redirect_uri = request.build_absolute_uri('/api/v1/complete/google-oauth2/')
+            backend = load_backend(strategy=strategy, name='google-oauth2', redirect_uri=redirect_uri)
+
+            try:
+                user = backend.auth_complete(request=request)
+            except HTTPError as e:
+                return Response({'error': f"HTTP Error: {str(e)}"}, status=400)
+
+            if user:
+                if user.is_new:
+                    user.is_active = True
+                    user.save()
+
+                if user.is_active:
+                    token, _ = Token.objects.get_or_create(user=user)
+                    return Response({'token': token.key})
+                else:
+                    return Response({'error': 'User is inactive'}, status=400)
+            else:
+                return Response({'error': 'Authentication failed'}, status=400)
+
+        except (MissingBackend, AuthTokenError, AuthForbidden) as e:
+            return Response({'error': f"Authentication error: {str(e)}"}, status=400)
+        except Exception as e:
+            return Response({'error': f"Unexpected error: {str(e)}"}, status=500)
+    else:
+        return Response({'error': 'Code parameter not found'}, status=400)

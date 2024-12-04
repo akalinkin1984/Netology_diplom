@@ -161,14 +161,15 @@ EMAIL_USE_SSL = True
 
 #djoser
 DJOSER = {
+    'LOGIN_FIELD': 'email',
     'PASSWORD_RESET_CONFIRM_URL': 'api/v1/auth/users/reset_password_confirm/?uid={uid}&token={token}',
     'ACTIVATION_URL': 'api/v1/auth/users/activation/?uid={uid}&token={token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SEND_CONFIRMATION_EMAIL': True,
     'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
     'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': [
-        'http://localhost:8000/auth-google/complete/google-oauth2/',
-        'http://127.0.0.1:8000/auth-google/complete/google-oauth2/',
+        'http://localhost:8000/api/v1/complete/google-oauth2/',
+        'http://127.0.0.1:8000/api/v1/complete/google-oauth2/',
     ],
     'SERIALIZERS': {
         'user': 'backend.serializers.UserAvatarSerializer',
@@ -231,11 +232,12 @@ AUTHENTICATION_BACKENDS = (
 SOCIAL_AUTH_POSTGRES_JSONFIELD = True
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.getenv('GOOGLE_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.getenv('GOOGLE_SECRET')
-
+SOCIAL_AUTH_GOOGLE_OAUTH2_EXTRA_DATA = ['first_name', 'last_name']
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
+    'openid',
 ]
 
 SOCIAL_AUTH_PIPELINE = (
@@ -250,8 +252,6 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
 )
-
-SOCIAL_AUTH_LOGIN_REDIRECT_URL = 'http://127.0.0.1:8000/api/v1/auth/users/me/'
 
 #django-silk
 SILKY_PYTHON_PROFILER = True
